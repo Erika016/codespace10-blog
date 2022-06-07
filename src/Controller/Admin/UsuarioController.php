@@ -8,6 +8,7 @@ use App\Repository\UsuarioRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -28,13 +29,18 @@ class UsuarioController extends AbstractController
     /**
      * @Route("/new", name="app_admin_usuario_new", methods={"GET", "POST"})
      */
-    public function new(Request $request, UsuarioRepository $usuarioRepository): Response
+    public function new(Request $request, UsuarioRepository $usuarioRepository, UserPasswordHasherInterface $passwordHasher): Response
     {
         $usuario = new Usuario();
         $form = $this->createForm(UsuarioType::class, $usuario);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $hashedPassword = $passwordHasher->hashPassword(
+                $usuario,
+                $usuario->getPassword()
+            );
+            $usuario->setPassword($hashedPassword);
             $usuarioRepository->add($usuario, true);
 
             return $this->redirectToRoute('app_admin_usuario_index', [], Response::HTTP_SEE_OTHER);
@@ -59,12 +65,17 @@ class UsuarioController extends AbstractController
     /**
      * @Route("/{id}/edit", name="app_admin_usuario_edit", methods={"GET", "POST"})
      */
-    public function edit(Request $request, Usuario $usuario, UsuarioRepository $usuarioRepository): Response
+    public function edit(Request $request, Usuario $usuario, UsuarioRepository $usuarioRepository, UserPasswordHasherInterface $passwordHasher): Response
     {
         $form = $this->createForm(UsuarioType::class, $usuario);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $hashedPassword = $passwordHasher->hashPassword(
+                $usuario,
+                $usuario->getPassword()
+            );
+            $usuario->setPassword($hashedPassword);
             $usuarioRepository->add($usuario, true);
 
             return $this->redirectToRoute('app_admin_usuario_index', [], Response::HTTP_SEE_OTHER);
