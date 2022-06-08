@@ -38,6 +38,11 @@ class EspacioRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    public function getQueryAll()
+    {
+        $qb =$this->createQueryBuilder('e');
+        return $qb->getQuery();
+    }
 
 //    /**
 //     * @return Espacio[] Returns an array of Espacio objects
